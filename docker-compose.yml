@@ -34,28 +34,34 @@ services:
         command: redis-server --save 20 1 --loglevel warning --requirepass 123456
         networks:
             - open_ecommerce_network
-    zookeeper:
-        container_name: open-ecommerce-zookeeper
-        image: docker.io/bitnami/zookeeper:3.9
-        ports:
-            - '2181:2181'
-        environment:
-            - ALLOW_ANONYMOUS_LOGIN=yes
-        volumes:
-            - open_ecommerce_zookeeper_dist:/bitnami
-        networks:
-            - open_ecommerce_network
+    # zookeeper:
+    #     container_name: open-ecommerce-zookeeper
+    #     image: docker.io/bitnami/zookeeper:3.9
+    #     ports:
+    #         - '2181:2181'
+    #     environment:
+    #         - ALLOW_ANONYMOUS_LOGIN=yes
+    #     volumes:
+    #         - open_ecommerce_zookeeper_dist:/bitnami
+    #     networks:
+    #         - open_ecommerce_network
     kafka:
         container_name: open-ecommerce-broker
         image: bitnami/kafka
         restart: unless-stopped
         ports:
-            - '9092:9092'
+            - '9094:9094'
         environment:
-            - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-        depends_on:
-            zookeeper:
-                condition: service_started
+            - KAFKA_CFG_NODE_ID=1
+            - KAFKA_CFG_PROCESS_ROLES=broker,controller
+            - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+            - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+            - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+            - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+            - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+            - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+            - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+            - KAFKA_KRAFT_MODE=true
         volumes:
             - open_ecommerce_kafka_dist:/bitnami
         networks:
@@ -78,8 +84,8 @@ services:
 volumes:
     open_ecommerce_auth_db_dist:
         driver: local
-    open_ecommerce_zookeeper_dist:
-        driver: local
+    # open_ecommerce_zookeeper_dist:
+    #     driver: local
     open_ecommerce_kafka_dist:
         driver: local
     open_ecommerce_redis_dist:
