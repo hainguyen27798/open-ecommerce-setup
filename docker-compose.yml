@@ -81,6 +81,22 @@ services:
                 condition: service_started
         networks:
             - open_ecommerce_network
+    notification:
+        container_name: open-ecommerce-notification
+        image: open-notification:1.0.0
+        environment:
+            MODE: prod
+        depends_on:
+            auth_db:
+                condition: service_healthy
+            redis:
+                condition: service_started
+        volumes:
+            - ./firebase.json:/firebase.json
+            - ./configs/noti-prod.yaml:/configs/prod.yaml
+        restart: unless-stopped
+        networks:
+            - open_ecommerce_network
 volumes:
     open_ecommerce_auth_db_dist:
         driver: local
