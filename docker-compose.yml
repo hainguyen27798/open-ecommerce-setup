@@ -13,7 +13,7 @@ services:
             - MYSQL_USER=auth
             - MYSQL_PASSWORD=Auth@123
         ports:
-            - '3306:3306'
+            - '3307:3306'
         healthcheck:
             test: mysqladmin ping -u root --password=$$MYSQL_ROOT_PASSWORD
             timeout: 20s
